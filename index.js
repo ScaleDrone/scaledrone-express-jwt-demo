@@ -16,20 +16,20 @@ app.get('/jwt', function(req, res) {
             payload = {
                 client: clientId, // the client that wants to connect
                 channel: channel, // channel that the client want's to connect to
-                permissions: [
-                    '.*': {
+                permissions: {
+                    '.*': { /* Regex matches everything */
+                        publish: false, /* Forbids publishing to all channels */
+                        subscribe: true /* Allows subscribing to all channels */
+                    },
+                    '^room1$': { /* Exact match to room1 */
+                        publish: true, /* Allows publishing in room1 */
+                        subscribe: true
+                    },
+                    '^room2$': {
                         publish: true,
                         subscribe: true
-                    },
-                    'main': {
-                        publish: false,
-                        subscribe: true
-                    },
-                    'a*': {
-                        publish: false,
-                        subscribe: true
                     }
-                ],
+                },
                 exp: Date.now() + 180000 // client can use this token for 3 minutes (UTC0)
             },
             token = jwt.encode(payload, secret, 'HS256');
@@ -40,3 +40,4 @@ app.get('/jwt', function(req, res) {
 });
 
 app.listen(1234);
+console.log('Server is running..');
