@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src='https://cdn.scaledrone.com/scaledrone.min.js'></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+</head>
+<body>
+  <script>
+    // CHANNEL_ID is defined in the index.ejs file
+    const drone = new Scaledrone('<%= CHANNEL_ID %>');
+
+    drone.on('open', error => {
+      if (error) {
+        return console.error(error);
+      }
+      appendToBody('Connection open');
+      fetch('auth/' + drone.clientId)
+        .then(response => response.text())
+        .then(jwt => drone.authenticate(jwt));
+    });
+
+    drone.on('authenticate', error => {
+      if (error) {
+        return console.error(error);
+      }
+      appendToBody('Authenticated');
+    });
+
+    drone.on('close', event => console.log('Connection was closed', event));
+    drone.on('error', error => console.error(error));
+
+    const room = drone.subscribe('myroom');
+
+    room.on('open', () => appendToBody('Connected to room'));
+    room.on('data', data => console.log(data));
+
+    function appendToBody(string) {
+      document.body.innerText += string + '\n';
+    }
+  </script>
+</body>
+</html>
